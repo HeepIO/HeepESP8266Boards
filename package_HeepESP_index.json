@@ -8,8 +8,8 @@
       "websiteURL": "https://heep.io", 
       "platforms": [
         {
-          "category": "Heep ESP8266 Modules", 
-          "name": "Heep ESP8266", 
+          "category": "Heep-ESP8266-Modules", 
+          "name": "Heep-ESP8266", 
           "url": "https://heepio.github.io/HeepESP8266Boards/HeepESPPackage.zip", 
           "checksum": "SHA-256:4c8d91dafe159dd0d205d31e8d9660aec63da17fea250e6cfbb76f6d84f7f8ab", 
           "help": {
