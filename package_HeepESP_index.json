@@ -21,17 +21,17 @@
           "size": "9884105", 
           "toolsDependencies": [
             {
-              "packager": "Heep-ESP8266", 
+              "packager": "esp8266", 
               "version": "0.4.12", 
               "name": "esptool"
             }, 
             {
-              "packager": "Heep-ESP8266", 
+              "packager": "esp8266", 
               "version": "1.20.0-26-gb404fb9-2", 
               "name": "xtensa-lx106-elf-gcc"
             }, 
             {
-              "packager": "Heep-ESP8266", 
+              "packager": "esp8266", 
               "version": "0.2.0", 
               "name": "mkspiffs"
             }
