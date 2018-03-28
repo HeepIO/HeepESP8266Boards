@@ -45,6 +45,8 @@ int GetControlValueByID(unsigned controlID);
 
 void AddControl(struct Control myControl);
 
+void AddVertex(struct Vertex_Byte myVertex);
+
 void SetupHeepTasks();
 
 void CommitMemory();
@@ -69,6 +71,9 @@ void AddOnOffControl(char* controlName, int inputOutput, int startingValue);
 
 int GetControlValueByName(char* controlName);
 void SetControlValueByName(char* controlName, int newValue);
+
+heepByte GetWiFiFromMemory(char* WiFiSSID, char* WiFiPassword, int priority);
+void AddWiFiSettingsToMemory(char* WiFiSSID, int numCharSSID, char* WiFiPassword, int numCharPassword, heepByte* deviceID, heepByte IDPriority);
 
 // AddToggleControl(Name, INPUT/OUTPUT, Starting)
 // AddMomentaryControl(NAME, INPUT/OUTPUT)

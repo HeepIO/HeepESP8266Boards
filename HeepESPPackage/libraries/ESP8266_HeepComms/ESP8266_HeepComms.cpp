@@ -1,81 +1,147 @@
 #include "ESP8266_HeepComms.h"
+#include "Heep_API.h"
 #include <SPI.h> 
 #include <ESP8266WiFi.h>
 #include <WiFiUdp.h>
 #include <WiFiClientSecure.h>
-#include <Heep_API.h>
+
+#define HEEP_CONNECT_TIMEOUT 10000
 
 unsigned int localPort = 5000;  
-int UDP_PORT = 5000;
 // An EthernetUDP instance to let us send and receive packets over UDP
 WiFiUDP Udp;
 
+String fallbackSSID = "SmoothHeep-2.4";
+String fallbackPassword = "SenorEgg";
+
+void CreateAccessPoint()
+{
+  Serial.println("Creating AP");
+  
+  uint8_t mac[WL_MAC_ADDR_LENGTH];
+  WiFi.softAPmacAddress(mac);
+  String macID = String(mac[WL_MAC_ADDR_LENGTH - 2], HEX) +
+                 String(mac[WL_MAC_ADDR_LENGTH - 1], HEX);
+  macID.toUpperCase();
+
+  String AP_NameString = "Heep" + macID;
+  String AP_Password = "HeepSecretPassword";
+
+  Serial.println(AP_NameString);
+
+  boolean result = WiFi.softAP(AP_NameString.c_str(), AP_Password.c_str());
+
+  Serial.print("AP Result: "); Serial.println(result);
+  Serial.println("AP UP");
+
+  if(result == 1)
+  {
+    Serial.println("Creating Server");
+    Serial.println("Server started");
+  }
+}
+
 void CreateInterruptServer()
 {
-  WiFi.begin(SSID.c_str(), Password.c_str());
+  boolean onFallback = false;
+  unsigned long connectAttemptStartTime = 0;
+  int currentWiFiPriorityID = 0;
+  char currentSSID [20];
+  char currentPassword [20];
+  
+  do{
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(250);
-    Serial.print(".");
+    // Clear SSID and Password
+    for(int i = 0; i < 20; i++)
+    {
+      currentSSID[i] = '\0';
+      currentPassword[i] = '\0';
+    }
+
+    connectAttemptStartTime = millis();
+    if(GetWiFiFromMemory(currentSSID, currentPassword, currentWiFiPriorityID) == 0){
+      onFallback = false;
+      Serial.print("Attempt SSID: "); Serial.println(currentSSID);
+      Serial.print("Attempt Password: "); Serial.println(currentPassword);
+      WiFi.begin(currentSSID, currentPassword);
+    }
+    else{
+      onFallback = true;
+      Serial.println("Attempting Fallback SSID");
+      WiFi.begin(fallbackSSID.c_str(), fallbackPassword.c_str());
+    }
+
+    while ( (WiFi.status() != WL_CONNECTED) && (millis() - connectAttemptStartTime < HEEP_CONNECT_TIMEOUT) ) {
+      delay(250);
+      Serial.print(".");
+    }
+
+    if(WiFi.status() != WL_CONNECTED){
+      currentWiFiPriorityID++;
+    }
+    else{
+      Serial.println("");
+      Serial.println("WiFi connected");
+      Serial.print("IP address: ");
+      Serial.println(WiFi.localIP());
+
+      IPAddress localIP = WiFi.localIP();
+      Serial.println(localIP);
+    }
+
+  }while(!onFallback && WiFi.status() != WL_CONNECTED); // Repeat until connected or fallback failed
+
+  if(WiFi.status() != WL_CONNECTED){
+    CreateAccessPoint();
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
-
-  while(WiFi.status() != WL_CONNECTED);
-
+  
   Udp.begin(localPort);
-
-  IPAddress localIP = WiFi.localIP();
-  Serial.println(localIP);
 }
 
 void CheckServerForInputs()
 {
-  int packetSize = Udp.parsePacket();
-  if (packetSize) {
-    Serial.print("Received packet of size ");
-    Serial.println(packetSize);
-    Serial.print("From ");
-    IPAddress remote = Udp.remoteIP();
-    for (int i=0; i < 4; i++) {
-      Serial.print(remote[i], DEC);
-      if (i < 3) {
-        Serial.print(".");
+    int packetSize = Udp.parsePacket();
+    if (packetSize) {
+      Serial.print("Received packet of size ");
+      Serial.println(packetSize);
+      Serial.print("From ");
+      IPAddress remote = Udp.remoteIP();
+      for (int i=0; i < 4; i++) {
+        Serial.print(remote[i], DEC);
+        if (i < 3) {
+          Serial.print(".");
+        }
       }
+      Serial.print(", port ");
+      Serial.println(Udp.remotePort());
+
+      // read the packet into packetBufffer
+      Udp.read(inputBuffer, inputBufferSize);
+      Serial.println("Contents:");
+      for(int i = 0; i < inputBufferSize; i++)
+      {
+        Serial.print((int)inputBuffer[i]);
+        Serial.print(" ");
+      }
+      Serial.println();
+      
+      if(IsROP()) return;
+
+      ExecuteControlOpCodes();
+
+      for(int i = 0; i < outputBufferLastByte; i++)
+      {
+        Serial.print(outputBuffer[i]); Serial.print(" ");
+      }
+      Serial.println();
+
+      // send a reply to the IP address and port that sent us the packet we received
+      IPAddress remoteIP(Udp.remoteIP());
+      Serial.print("Sending to: "); Serial.print(Udp.remoteIP());
+      Udp.beginPacket(Udp.remoteIP(), localPort);
+      Udp.write(outputBuffer, outputBufferLastByte);
+      Udp.endPacket();
     }
-    Serial.print(", port ");
-    Serial.println(Udp.remotePort());
-
-    // read the packet into packetBufffer
-    Udp.read(inputBuffer, inputBufferSize);
-    Serial.println("Contents:");
-    for(int i = 0; i < inputBufferSize; i++)
-    {
-      Serial.print((int)inputBuffer[i]);
-      Serial.print(" ");
-    }
-    Serial.println();
-    
-    if(IsROP()) return;
-
-    ExecuteControlOpCodes();
-
-    for(int i = 0; i < outputBufferLastByte; i++)
-    {
-      Serial.print(outputBuffer[i]); Serial.print(" ");
-    }
-    Serial.println();
-
-    // send a reply to the IP address and port that sent us the packet we received
-    IPAddress remoteIP(Udp.remoteIP());
-    Serial.print("Sending to: "); Serial.print(Udp.remoteIP());
-    Udp.beginPacket(Udp.remoteIP(), localPort);
-    Udp.write(outputBuffer, outputBufferLastByte);
-    Udp.endPacket();
-  }
-
 }
 
 void SendOutputBufferToIP(HeepIPAddress destIP)
