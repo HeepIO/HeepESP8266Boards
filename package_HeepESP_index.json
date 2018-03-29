@@ -11,14 +11,14 @@
           "category": "Heep-ESP8266-Modules", 
           "name": "Heep-ESP8266", 
           "url": "https://heepio.github.io/HeepESP8266Boards/HeepESPPackage-1.0.0.tar.bz2", 
-          "checksum": "SHA-256:51520de7c77401f8a95ef8757d77057a5cea7b26ee934457ea71c11bd82d446f", 
+          "checksum": "SHA-256:3c9208270b4d2484c70c60330baf23ba9d8288be5a84348d2605157a197499c6", 
           "help": {
             "online": "https://heep.io"
           }, 
           "version": "1.0.0", 
           "architecture": "esp8266", 
           "archiveFileName": "HeepESPPackage-1.0.0.tar.bz2", 
-          "size": "9893377", 
+          "size": "9895796", 
           "toolsDependencies": [
             {
               "packager": "Heep", 
