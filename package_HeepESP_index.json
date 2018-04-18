@@ -10,6 +10,41 @@
         {
           "category": "Heep-ESP8266-Modules", 
           "name": "Heep-ESP8266", 
+          "url": "https://heepio.github.io/HeepESP8266Boards/HeepESPPackage-1.0.1.tar.bz2", 
+          "checksum": "SHA-256:4b96834fec2ae359d993835ab5f32b992c6e816c1408eeb81b3fda626c1bafa6", 
+          "help": {
+            "online": "https://heep.io"
+          }, 
+          "version": "1.0.1", 
+          "architecture": "esp8266", 
+          "archiveFileName": "HeepESPPackage-1.0.1.tar.bz2", 
+          "size": "9898886", 
+          "toolsDependencies": [
+            {
+              "packager": "Heep", 
+              "version": "0.4.12", 
+              "name": "esptool"
+            }, 
+            {
+              "packager": "Heep", 
+              "version": "1.20.0-26-gb404fb9-2", 
+              "name": "xtensa-lx106-elf-gcc"
+            }, 
+            {
+              "packager": "Heep", 
+              "version": "0.2.0", 
+              "name": "mkspiffs"
+            }
+          ], 
+          "boards": [
+            {
+              "name": "Heep ESP8266"
+            }
+          ]
+        },
+        {
+          "category": "Heep-ESP8266-Modules", 
+          "name": "Heep-ESP8266", 
           "url": "https://heepio.github.io/HeepESP8266Boards/HeepESPPackage-1.0.0.tar.bz2", 
           "checksum": "SHA-256:ad1e391d63775b2821203859c64d4bc2fec8d398f40203251f57c7b27209b133", 
           "help": {
